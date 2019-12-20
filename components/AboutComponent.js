@@ -1,9 +1,16 @@
 import React, { Component } from 'react';
 import { ScrollView, Text } from 'react-native';
 import { Card } from 'react-native-elements';
-import { LEADERS } from '../shared/leaders';
 import { FlatList } from 'react-native';
 import { ListItem } from 'react-native-elements';
+import { connect } from 'react-redux';
+import { baseUrl } from '../shared/baseUrl';
+
+const mapStateToProps = state => {
+    return {
+      leaders: state.leaders
+    }
+  }
 
 function History() {
     return(
@@ -17,13 +24,6 @@ function History() {
 
 class AboutComponent extends Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-          leaders: LEADERS
-        };
-    }
-
     static navigationOptions = {
         title: 'About'
     }
@@ -32,7 +32,7 @@ class AboutComponent extends Component {
     render() {
         const { navigate } = this.props.navigation;
 
-        const renderLeaders = ({item, index}) => {
+        const renderLeader = ({item, index}) => {
             return (
                 <ListItem
                     key={index}
@@ -40,7 +40,7 @@ class AboutComponent extends Component {
                     subtitle={item.description}
                     hideChevron={true}
                     onPress={() => navigate('About', { leaderId: item.id })}
-                    leftAvatar={{ source: require('./images/alberto.png')}}
+                    leftAvatar={{source: {uri: baseUrl + item.image}}}
                 />
             );
         };
@@ -50,8 +50,8 @@ class AboutComponent extends Component {
                 <History />
                 <Card title='Corporate Leadership'>
                     <FlatList 
-                        data={this.state.leaders}
-                        renderItem={renderLeaders}
+                        data={this.props.leaders.leaders}
+                        renderItem={renderLeader}
                         keyExtractor={item => item.id.toString()}
                     />
                 </Card>
@@ -61,4 +61,4 @@ class AboutComponent extends Component {
 
 }
 
-export default AboutComponent;
+export default connect(mapStateToProps)(AboutComponent);
