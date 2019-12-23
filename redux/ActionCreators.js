@@ -162,7 +162,6 @@ export const addComment = (comment) => ({
 })
 
 export const postComment = (dishId, rating, author, comment) => (dispatch) => {
-    console.log(dishId, rating, author, comment)
         const newComment = {
             dishId: dishId,
             rating: rating,
