@@ -113,7 +113,6 @@ class Dishdetail extends Component {
     }
 
     handleComment(dishId) {
-        console.log(JSON.stringify(this.state.rating, this.state.author, this.state.comment));
         this.props.postComment(dishId, this.state.rating, this.state.author, this.state.comment);
         this.toggleModal();
         this.resetForm(); 
