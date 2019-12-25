@@ -4,6 +4,8 @@ import DatePicker from 'react-native-datepicker';
 import * as Animatable from 'react-native-animatable';
 import { Notifications } from 'expo';
 import * as Permissions from 'expo-permissions';
+import * as Calendar from 'expo-calendar';
+
 
 
 
@@ -30,11 +32,6 @@ class Reservation extends Component {
         
     }
 
-    handleReservation() {
-        this.toggleModal();
-        
-    }
-
     resetForm() {
         this.setState({
             guests: 1,
@@ -42,6 +39,41 @@ class Reservation extends Component {
             date: '',
             showModal: false
         });
+    }
+
+    async obtainCalendarPermission() {
+        let permission = await Permissions.getAsync(Permissions.CALENDAR);
+        if (permission.status !== 'granted') {
+            permission = await Permissions.askAsync(Permissions.CALENDAR);
+            if (permission.status !== 'granted') {
+                Alert.alert('Permission not granted to show notifications');
+            }
+        }
+        return permission;
+    }
+
+    async handleReservation() {
+        await this.obtainCalendarPermission();
+        const Calendars = await Calendar.getCalendarsAsync()
+        const defaultCalendar = Calendars.filter(calendar => calendar.name == null)
+        
+        this.addReservationToCalendar(defaultCalendar[0].id);
+        this.resetForm();
+    }
+
+    addReservationToCalendar(defaultCalendarId) {
+        const endDate = new Date(this.state.date);
+        endDate.setHours(endDate.getHours() + 2 );
+
+        Calendar.createEventAsync(defaultCalendarId, {
+            title: 'Con Fusion Table Reservation',
+            startDate: new Date(this.state.date),
+            endDate: endDate,
+            timeZone: 'Asia/Hong_Kong',
+            location: '121, Clear Water Bay Road, Clear Water Bay, Kowloon, HONG KONG',
+            notes: `Guests: ${this.state.guests}\nSmoking: ${this.state.smoking}`
+
+        })
     }
 
     async obtainNotificationPermission() {
@@ -133,7 +165,7 @@ class Reservation extends Component {
                             'Date and Time: ' + this.state.date,
                             [
                                 {text: 'Cancel', onPress: () => {console.log('Cancel Pressed'); this.resetForm();}, style: 'cancel'},
-                                {text: 'OK', onPress: () => {this.presentLocalNotification(this.state.date); this.resetForm();}},
+                                {text: 'OK', onPress: () => {this.handleReservation();}},
                             ],
                             { cancelable: false }
                         )}
@@ -142,23 +174,6 @@ class Reservation extends Component {
                     accessibilityLabel="Learn more about this purple button"
                     />
                 </View>
-                {/* <Modal animationType = {"slide"} transparent = {false}
-                    visible = {this.state.showModal}
-                    onDismiss = {() => this.toggleModal() }
-                    onRequestClose = {() => this.toggleModal() }>
-                    <View style = {styles.modal}>
-                        <Text style = {styles.modalTitle}>Your Reservation</Text>
-                        <Text style = {styles.modalText}>Number of Guests: {this.state.guests}</Text>
-                        <Text style = {styles.modalText}>Smoking?: {this.state.smoking ? 'Yes' : 'No'}</Text>
-                        <Text style = {styles.modalText}>Date and Time: {this.state.date}</Text>
-                        
-                        <Button 
-                            onPress = {() =>{this.toggleModal(); this.resetForm();}}
-                            color="#512DA8"
-                            title="Close" 
-                            />
-                    </View>
-                </Modal> */}
             </Animatable.View>
         );
     }
